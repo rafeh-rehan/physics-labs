@@ -4,4 +4,4 @@ Python scripts written for physics labratory expirements and numerical simulatio
 
 **ode_sho.py** : Solves the linear differential equation describing a simple harmonic oscillator (sho).
 
-**ode_vpo.py** : Solves the non-linear differential equation describing a Van der Pol oscillator (vpo).
+**ode_vpo.py** : Solves the non-linear differential equation describing a forced and unforced Van der Pol oscillator (vpo).
