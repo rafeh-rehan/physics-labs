@@ -5,12 +5,17 @@ from scipy.signal import argrelmax
 
 
 """
-This program solves and visualizes the solutions to the differential equation
-describing the Van der Pol oscillator using scipy's odeint method.
+This program solves and visualizes the solutions to the differential equations
+describing the Unforced and Forced Van der Pol oscillators using scipy's odeint
+method.
 
 https://en.wikipedia.org/wiki/Van_der_Pol_oscillator
 
 """
+
+
+
+""" Unforced Van der Pol Oscillator """
 
 #Initial conditions
 x0 = 1
@@ -63,7 +68,10 @@ plt.grid('on')
 
 plt.suptitle('Unforced van der Pol for mu=' + ('%.2f' % mu) + ' dt=' +('%.3f' % dt))
 
+
+
 ## Analyzing the period T of the oscillation as a function of the damping parameter \mu
+
 
 #time step
 dt=0.01
@@ -107,7 +115,7 @@ plt.subplot(2,1,1)
 plt.plot(smol_mu,T[:len(smol_mu)], smol_mu, T_mu(smol_mu))
 plt.legend((r'Numerical',r'Theoretical'), loc='lower right')
 plt.ylabel('Period (sec)')
-plt.xlabel(r'Small $\mu$')
+plt.xlabel(r'$\mu$')
 plt.grid('on')
 
 #Period vs mu plot for \mu > 15
@@ -115,7 +123,65 @@ plt.subplot(2,1,2)
 plt.plot(big_mu, T[-len(big_mu):], big_mu, T_mu(big_mu))
 plt.legend((r'Numerical',r'Theoretical',r'Large $\mu$ theoretical',), loc='lower right')
 plt.ylabel('Period (sec)')
-plt.xlabel(r'Large $\mu$')
+plt.xlabel(r'$\mu$')
 plt.grid('on')
 
-plt.suptitle(r'Period vs $\mu$')
+plt.suptitle(r'Period vs $\mu$ for Unforced Van der Pol')
+
+
+
+""" Forced/Driven Van der Pol Oscillator"""
+
+
+
+#Initial conditions, change what you like :)
+x0 = 2
+v0 = 0
+phi0 = 0
+A = 15
+mu = 3
+w = 3.98
+#
+
+#time step
+dt=0.001
+t= np.arange(0.0,100.0,dt)
+
+#solving ODE using odeint
+#define a function for our system of first order odes and initial conditions
+ics = [x0,v0,phi0]
+def pend(y,t):
+    x,v,phi = y
+    dydt = [v , A*np.cos(w*t) + mu*(1-x**2)*v - x, w]
+    return dydt
+
+#storing solutions in new variables
+sol = scint.odeint(pend, ics, t)
+x_ode = sol[:,0]
+v_ode = sol[:,1]
+phi_ode = sol[:,2]
+
+#All plots are done after the motion is settled in its limit cycle
+plt.figure(3,figsize=(10,10))
+#Position plot
+plt.subplot(3,1,1)
+plt.plot(t[3000:],x_ode[3000:])
+plt.ylabel('x(t)')
+plt.xlabel('t')
+plt.grid('on')
+
+#Velocity plot
+plt.subplot(3,1,2)
+plt.plot(t[3000:],v_ode[3000:])
+plt.ylabel('v(t)')
+plt.xlabel('t')
+plt.grid('on')
+
+#3D phase space projection onto (x,v)
+plt.subplot(3,1,3)
+plt.plot(x_ode[3000:],v_ode[3000:])
+plt.ylabel('v(t)')
+plt.xlabel('x(t)')
+plt.grid('on')
+
+plt.suptitle('Forced Van der Pol for w=' + ('%.3f' % w))
