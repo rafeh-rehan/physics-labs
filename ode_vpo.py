@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as scint
+from scipy.signal import argrelmax
 
 
 """
-This program solves the differential equation describing the Van der Pol oscillator
-using scipy's odeint method.
+This program solves and visualizes the solutions to the differential equation
+describing the Van der Pol oscillator using scipy's odeint method.
 
 https://en.wikipedia.org/wiki/Van_der_Pol_oscillator
 
@@ -61,3 +62,60 @@ plt.xlabel('x(t)')
 plt.grid('on')
 
 plt.suptitle('Unforced van der Pol for mu=' + ('%.2f' % mu) + ' dt=' +('%.3f' % dt))
+
+## Analyzing the period T of the oscillation as a function of the damping parameter \mu
+
+#time step
+dt=0.01
+t= np.arange(0.0,300.01,dt)
+
+#\mu step for iteration over mu when calculating periods for each value
+dmu=0.01
+mu=np.arange(0.01,50.01,dmu)
+
+#initialize empty period array
+T=[]
+for i in range(len(mu)):
+    #store the solution into a new variable
+    sol = scint.odeint(pend, ics, t, args=(mu[i],))
+    x_ode = sol[:,0]
+
+    #Estimating the period of the oscillator
+    #store array of indices of local maxima in x_ode after its settled into limit cycle
+    maxima = argrelmax(x_ode[200:])[0]
+
+    #if the maxima array is non-empty, calculate the period
+    if len(maxima) > 0:
+        num_of_periods = len(maxima) - 1
+        delta_t = (maxima[-1] - maxima[0])*dt
+        T.append(delta_t/num_of_periods)
+
+#Theoretical model in the large \mu approximation
+def T_mu(u):
+    a = 2.33810741
+    b = 1.3246
+    return (3-2*np.log(2))*u + 3*a/(u**(1/3)) - 2*np.log(u)/(3*u) - b/(u**2)
+
+# Split mu array into small and large mu
+smol_mu = np.array([u for u in mu if u <= .5])
+big_mu  = np.array([u for u in mu if u >= 40])
+
+
+plt.figure(2, figsize=(10,10))
+#Period vs \mu plot for 0.1 <= mu <= 15
+plt.subplot(2,1,1)
+plt.plot(smol_mu,T[:len(smol_mu)], smol_mu, T_mu(smol_mu))
+plt.legend((r'Numerical',r'Theoretical'), loc='lower right')
+plt.ylabel('Period (sec)')
+plt.xlabel(r'Small $\mu$')
+plt.grid('on')
+
+#Period vs mu plot for \mu > 15
+plt.subplot(2,1,2)
+plt.plot(big_mu, T[-len(big_mu):], big_mu, T_mu(big_mu))
+plt.legend((r'Numerical',r'Theoretical',r'Large $\mu$ theoretical',), loc='lower right')
+plt.ylabel('Period (sec)')
+plt.xlabel(r'Large $\mu$')
+plt.grid('on')
+
+plt.suptitle(r'Period vs $\mu$')
